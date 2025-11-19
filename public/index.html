@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>EntrevistaT</title>
+
+  <!-- 🔹 FAVICON (logo en pestaña) -->
+  <link rel="icon" type="image/png" href="assets/logo.png">
+  <link rel="shortcut icon" href="assets/logo.png" type="image/x-icon">
+  <link rel="apple-touch-icon" href="assets/logo.png">
+
+  <link rel="stylesheet" href="css/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <style>
+    /* Debug opcional (no afecta estilos principales) */
+    #debugBar{
+      position:fixed;
+      left:12px;
+      bottom:12px;
+      background:var(--color-card);
+      color:var(--color-texto);
+      border:1px solid var(--color-borde);
+      padding:8px 10px;
+      border-radius:8px;
+      font:12px/1.2 system-ui;
+      max-width:70vw;
+      z-index:9999;
+      display:none;
+    }
+    #debugBar.show{display:block}
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+   <header>
+  <div class="topBar">
+    
+    <!-- Botones a la izquierda -->
+    <div class="topButtons">
+        <button id="btnMenu" class="secondary hidden">🏚️</button>
+        <button id="btnModo" title="Cambiar tema">🌙</button>
+    </div>
+
+    <!-- QR a la derecha -->
+    <div id="qr"></div>
+
+  </div>
+
+  <!-- Título centrado -->
+  <div class="tituloCentro">
+    <h1>EntrevistaT</h1>
+    <p class="subtitulo">De la práctica a tu primer empleo</p>
+  </div>
+</header>
+
+    <main>
+      <!-- PANTALLA 1: INICIO -->
+      <section id="pantalla-inicio" class="card">
+        <h2>¡Prepárate! </h2>
+        <p class="muted">Se generarán 5 preguntas de manera aleatoria que servirán para evaluar tu desempeño con base en tus respuestas.Tendrás 2 minutos para responder a cada una de ellas.</p>
+
+        <label for="puesto">Puesto</label>
+        
+        <select id="puesto"></select>
+
+        <div style="margin-top:10px">
+          <button id="btnIniciar" class="primary">Iniciar entrevista</button>
+          <button id="btnHistorial" class="secondary" style="margin-top:10px;">
+  Ver historial
+</button>
+
+        </div>
+      </section>
+
+      <!-- PANTALLA 2: PREGUNTA -->
+  <section id="pantalla-pregunta" class="card hidden">
+        <div class="info" style="display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <div id="puestoActual" class="muted"></div>
+            <div id="progreso" class="muted"></div>
+          </div>
+          <div id="timer" class="timer">02:00</div>
+        </div>
+
+        <div id="textoPregunta" class="pregunta" style="margin-top:10px;font-weight:bold"></div>
+
+        <label for="respuesta" style="margin-top:10px;display:block">Tu respuesta</label>
+        <textarea id="respuesta" rows="5" placeholder="Ingresa tu respuesta con el teclado o usando el micrófono"></textarea>
+
+        <div style="display:flex;gap:10px;margin-top:8px">
+          <button id="btnVoz">Dictar</button>
+          <button id="btnEnviar" class="primary">Enviar respuesta</button>
+        </div>
+
+        <!-- === FEEDBACK SIN TARJETAS, SIMPLE Y LIMPIO === -->
+        <div id="feedback" class="hidden" style="margin-top:12px">
+
+          <h3 style="margin-bottom:6px;">Análisis de la respuesta</h3>
+          <div id="puntajeGeneral" class="puntaje-general hidden"></div>
+          <div id="feedbackSTAR"></div>
+
+
+          <pre id="feedbackScore" style="display:none;"></pre>
+
+          <div style="margin-top:12px">
+            <button id="btnSiguiente" class="primary">Siguiente</button>
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- PANTALLA 3: RESULTADOS -->
+     <section id="pantalla-resultados" class="card hidden">
+        <h2>Resultados</h2>
+
+        <!-- Bloque de resumen global -->
+        <div id="resumenGlobal">
+
+          <h3>🔍 Resumen del desempeño</h3>
+          <p id="resumenTexto"></p>
+
+          <hr class="divider">
+
+          <h3>🎯 Probabilidad de contratación</h3>
+          <p id="resumenProbabilidad"></p>
+
+          <hr class="divider">
+
+          <h3>💪 Fortalezas generales</h3>
+          <ul id="resumenFortalezas"></ul>
+
+          <hr class="divider">
+
+          <h3>⚠️ Áreas de mejora</h3>
+          <ul id="resumenMejoras"></ul>
+
+        </div>
+
+        <!-- Spider chart -->
+        <div id="chartWrapper">
+  <canvas id="spider"></canvas>
+</div>
+
+<div id="leyendaCompetencias" class="card" style="margin-top: 20px;">
+  <h3>Significado de las competencias</h3>
+
+  <p>
+    <strong>📘 AA</strong> — Aprendizaje y Adaptabilidad<br>
+    <strong>🎯 ORC</strong> — Orientación a Resultados y Calidad<br>
+    <strong>🤝 CC</strong> — Comunicación y Colaboración<br>
+    <strong>💡PCRP</strong> — Pensamiento Crítico y Resolución de Problemas<br>
+    <strong>🚀 AP</strong> — Autonomía y Proactividad<br>
+    <strong>🔒 EIP</strong> — Ética e Integridad Profesional
+  </p>
+</div>
+
+
+
+
+        <!-- Resumen en texto plano (para copiar) -->
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
+          <button id="btnOtra" class="primary">Volver al menú</button>
+        </div>
+      </section>
+
+<section id="pantalla-historial" class="card hidden">
+  <h2>📘 Historial de entrevistas</h2>
+
+  <!-- Aquí se cargan dinámicamente todas las entrevistas -->
+  <div id="listaHistorial" style="margin-top:15px;"></div>
+
+  <!-- Botón para borrar historial -->
+<button id="btnBorrarHistorial" class="danger" style="margin-top:10px;">
+  🗑️ Borrar historial
+</button>
+
+
+  <!-- Botón para volver al inicio -->
+  <button id="btnVolverInicioHistorial" class="primary" style="margin-top:15px;">
+    Volver al inicio
+  </button>
+</section>
+
+
+
+    </main>
+
+    <div id="toast" class="toast">Copiado</div>
+  </div>
+
+  <!-- Modal confirmación para volver al menú -->
+  <div id="confirmOverlay">
+    <div id="confirmCard">
+      <p style="margin-top:0">¿Seguro que deseas regresar al inicio? Se perderá tu progreso.</p>
+      <div style="display:flex;gap:10px;justify-content:flex-end">
+        <button id="btnCancelarSalir" class="secondary">Cancelar</button>
+        <button id="btnConfirmarSalir" class="primary">Sí, regresar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal confirmación para borrar historial -->
+<div id="confirmOverlayHistorial">
+  <div id="confirmCardHistorial">
+    <p style="margin-top:0">¿Seguro que deseas borrar TODO el historial?</p>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button id="btnCancelarBorrarHist" class="secondary">Cancelar</button>
+      <button id="btnConfirmarBorrarHist" class="primary">Sí, borrar</button>
+    </div>
+  </div>
+</div>
+
+
+  <div id="debugBar"></div>
+
+  <script src="js/app.js?v=css-sync" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <div id="pdfArea" class="pdf-container" style="display:none"></div>
+
+</body>
+</html>

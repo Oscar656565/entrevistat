@@ -1,0 +1,709 @@
+/* ================== Tema (variables) ================== */
+:root{
+  --color-fondo:#0b1020;
+  --color-texto:#e7ecff;
+  --color-card:#121933;
+  --color-borde:#2a3370;
+  --color-acento:#3b59ff;
+  --color-muted:#e7ecffb3;
+  --color-input:#0f1533;
+  --color-sec:#1a2252;
+  --color-sec-borde:#2d3a82;
+  --color-timer:#ffffff; /* modo oscuro */
+}
+
+body.light{
+  --color-fondo:#f7f8fc;
+  --color-texto:#121212;
+  --color-card:#ffffff;
+  --color-borde:#d2d6e6;
+  --color-acento:#3b59ff;
+  --color-muted:#5b5b5b;
+  --color-input:#ffffff;
+  --color-sec:#eef1ff;
+  --color-sec-borde:#d2d6e6;
+  --color-timer:#000000; /* modo claro */
+}
+
+/* ================== Base ================== */
+body{
+  font-family: Arial, sans-serif;
+  background: var(--color-fondo);
+  color: var(--color-texto);
+  margin:0;
+  transition: background .3s ease, color .3s ease;
+}
+
+.wrap{ max-width:900px; margin:auto; padding:20px; }
+
+/* ================== Header ================== */
+header{
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 16px;
+  padding: 8px 0;
+}
+
+.qrRow{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 2;
+}
+
+#qr {
+  width: 80px;
+  height: 80px;
+  background: none !important;
+  border: none !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  display: block;
+}
+
+
+.controlsCol{
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: stretch;
+}
+
+/* Título centrado */
+.tituloCentro {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  width: fit-content;
+}
+
+/* Color del texto principal del título */
+.tituloCentro h1 {
+  color: #2f4eff; /* mismo color que el botón Iniciar Entrevista */
+  text-shadow: 0px 0.5px 0.5px rgba(81, 81, 81, 0.6);
+}
+
+.tituloCentro .subtitulo {
+  color: var(--color-muted) !important;
+  font-weight: 500;
+}
+
+
+
+
+h1 {
+  font-size: 1.8em;
+  margin: 0 0 4px 0;
+}
+
+.subtitulo {
+  margin: 0;
+  color: var(--color-muted);
+}
+
+/* ================== Tarjetas ================== */
+.card {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  margin-top: 20px; /* si quieres menos, pon 10px o 0 */
+}
+
+/* ================== Formularios ================== */
+label{ display:block; margin-top:10px; }
+
+select, input, textarea, button{
+  width:100%;
+  margin-top:5px;
+  padding:10px;
+  border-radius:10px;
+  border:1px solid var(--color-borde);
+  background: var(--color-input);
+  color: var(--color-texto);
+  transition: background .3s ease, color .3s ease;
+  
+}
+
+body {
+  text-align: justify;
+}
+
+
+button {
+  cursor: pointer;
+}
+
+
+textarea {
+  font-family: Arial, sans-serif !important;
+  font-size: 14px;
+  line-height: 1.4;
+  padding: 10px 14px;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+/* ================== Feedback (REGRESO AL ESTILO SIMPLE) ================== */
+
+#feedbackSTAR {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  margin: 0 0 12px;
+  background: transparent;
+  border: none;
+  padding: 0;
+  max-height: none;
+  overflow: visible;
+}
+
+
+body.light #feedbackSTAR,
+body.light #feedbackScore{
+  background:#f1f3ff;
+  border-color:#d2d6e6;
+}
+
+/* ================== Botones ================== */
+button.primary{ background: var(--color-acento); border:none; cursor:pointer; color:white; }
+button.secondary{ background: var(--color-sec); border:1px solid var(--color-sec-borde); }
+button:hover{ opacity:.9; }
+
+/* Botón dictado */
+#btnVoz {
+  background: var(--color-acento);
+  border: none;
+  color: #fff;
+  transition: background .3s ease, color .3s ease;
+}
+
+#btnVoz.escuchando {
+  background: var(--color-input);
+  color: var(--color-texto);
+  border: 1px solid var(--color-borde);
+}
+
+/* ================== Otros elementos ================== */
+.hidden{ display:none !important; }
+.muted{ opacity: .7; color: var(--color-muted); }
+
+.timer, #timer{
+  font-weight:bold;
+  color: var(--color-timer);
+  font-variant-numeric: tabular-nums;
+  letter-spacing:.5px;
+}
+
+/* ================== Toast ================== */
+.toast{
+  position:fixed;
+  right:20px;
+  bottom:20px;
+  background:#111941;
+  padding:10px 20px;
+  border-radius:8px;
+  display:none;
+  color:#fff;
+}
+.toast.show{ display:block; }
+
+/* ================== Modal ================== */
+#confirmOverlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.5);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+}
+
+#confirmOverlay.show{ display:flex; animation: fadeIn .2s ease-out; }
+
+#confirmCard{
+  background: var(--color-card);
+  color: var(--color-texto);
+  border:1px solid var(--color-borde);
+  border-radius:12px;
+  padding:18px;
+  width:min(420px,92vw);
+  box-shadow:0 10px 30px rgba(0,0,0,.35);
+  animation: zoomIn .25s ease-out;
+}
+
+/* ================== Animación menú inicio ================== */
+#pantalla-inicio {
+  opacity: 0;
+  transform: translateY(15px);
+  filter: blur(6px);
+  animation: fadeInInicio 1s ease-out forwards;
+}
+
+@keyframes fadeInInicio {
+  0% { opacity: 0; transform: translateY(15px); filter: blur(6px); }
+  100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+
+/* ================== Debug ================== */
+#debugBar{ 
+  position:fixed; 
+  left:12px; 
+  bottom:12px; 
+  background:var(--color-card); 
+  color:var(--color-texto);
+  border:1px solid var(--color-borde); 
+  padding:8px 10px; 
+  border-radius:8px; 
+  font:12px/1.2 system-ui;
+  max-width:70vw; 
+  z-index:9999; 
+  display:none;
+}
+
+#debugBar.show{ display:block; }
+
+#feedback pre {
+  font-family: Arial, Helvetica, sans-serif;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  margin: 0;
+  padding: 0;
+  background: none;
+  border: none;
+  font-size: 17px;
+  line-height: 1.45;
+}
+
+#feedbackSTAR {
+  white-space: normal;
+  margin: 0;
+  padding: 0;
+}
+.feedback-block {
+  margin-bottom: 12px;
+}
+.feedback-title {
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+.feedback-text {
+  line-height: 1.45;
+}
+
+/* ====== LÍNEAS SEPARADORAS ENTRE BLOQUES DE FEEDBACK ====== */
+.feedback-block {
+  padding: 6px 0 14px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.12); /* línea suave */
+}
+
+.feedback-block:last-child {
+  border-bottom: none; /* elimina la línea al final */
+}
+
+.feedback-title {
+  font-weight: bold;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.feedback-text {
+  margin: 0;
+  line-height: 1.45;
+}
+
+.puntaje-general {
+  background: var(--color-sec);
+  border: 1px solid var(--color-sec-borde);
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  font-weight: bold;
+  font-size: 16px;
+  width: fit-content;
+  color: var(--color-texto);
+}
+
+/* ================== Resultados globales ================== */
+
+#resumenGlobal {
+  margin-top: 12px;
+}
+
+#resumenGlobal h3 {
+  margin: 10px 0 4px;
+  font-size: 1rem;
+}
+
+#resumenGlobal p {
+  margin: 0 0 8px;
+  text-align: justify;
+}
+
+#resumenGlobal ul {
+  margin: 4px 0 8px 18px;
+  padding: 0;
+  text-align: justify;
+}
+
+#resumenGlobal li {
+  margin-bottom: 4px;
+}
+
+/* Línea separadora sutil */
+.divider {
+  border: 0;
+  border-top: 1px solid var(--color-borde);
+  opacity: .5;
+  margin: 10px 0;
+}
+
+/* El resumen en <pre> que usamos para copiar se ve ordenado */
+#resumen {
+  font-family: Arial, sans-serif;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin-top: 12px;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+#pantalla-resultados .card {
+  padding-bottom: 0 !important;
+}
+
+#pantalla-resultados button {
+  margin-top: 5px !important;
+}
+
+#resumen:empty {
+  margin: 0 !important;
+  padding: 0 !important;
+  display: none !important;
+}
+
+/* ====== FIX PARA EL ESPACIO GIGANTE ====== */
+
+#pantalla-resultados .card {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+#chartWrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin: 10px 0 0 0;
+  padding: 0;
+}
+
+#spider {
+  display: block;
+  margin: 0 auto;
+}
+
+/* ======== ESTILO ESPECIAL PARA PDF ======== */
+.pdf-container {
+  background: white !important;
+  color: black !important;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+}
+
+.pdf-container h2, 
+.pdf-container h3 {
+  margin-bottom: 6px;
+}
+
+.pdf-container ul {
+  margin-left: 18px;
+}
+
+#confirmOverlayHistorial {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+}
+
+#confirmOverlayHistorial.show {
+  display: flex;
+}
+
+#confirmCardHistorial {
+  background: var(--color-card);
+  color: var(--color-texto);
+  border: 1px solid var(--color-borde);
+  padding: 20px;
+  border-radius: 14px;
+  width: 320px;
+}
+
+/* === Modal de borrar historial === */
+#confirmOverlayHistorial {
+  position: fixed;
+  inset: 0;
+  display: none; 
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,.55);
+  z-index: 9999;
+}
+
+#confirmOverlayHistorial.show {
+  display: flex;
+}
+
+#confirmCardHistorial {
+  background: var(--color-card);
+  color: var(--color-texto);
+  border: 1px solid var(--color-borde);
+  border-radius: 12px;
+  padding: 20px;
+  width: min(90%, 380px);
+  box-shadow: 0 6px 25px rgba(0,0,0,.35);
+}
+
+/* Flecha del historial */
+.arrow {
+  width: 0;
+  height: 0;
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+  border-left: 8px solid var(--color-texto);
+  transition: transform 0.25s ease-in-out;
+}
+
+/* Girada cuando está abierta */
+.arrow.open {
+  transform: rotate(90deg);
+}
+
+/* Botón rojo (acción peligrosa) */
+button.danger {
+  background: #d93636;
+  color: #ffffff;
+  border: 1px solid #a62828;
+  transition: 0.2s;
+}
+
+button.danger:hover {
+  background: #b72e2e;
+  border-color: #8e1f1f;
+}
+
+button.danger:active {
+  background: #8e1f1f;
+}
+
+/* ---- HEADER REORGANIZADO ---- */
+.topBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 5px 10px;
+}
+
+.topBar #qr {
+  flex-shrink: 0;
+}
+
+
+/* ---- MÓVIL (evita que se empalme el título) ---- */
+@media (max-width: 600px) {
+  header {
+    margin-top: 10px;
+  }
+
+  .tituloCentro {
+    margin-top: 60px; /* empuja título hacia abajo para que no choque con QR/botones */
+  }
+
+  #qr {
+    width: 60px !important;
+    height: 60px !important;
+  }
+
+}
+
+/* ---- HEADER REORGANIZADO ---- */
+.topBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 5px 10px;
+}
+
+/* ---- VISTA MÓVIL ---- */
+@media (max-width: 600px) {
+
+  /* botones uno encima del otro */
+  .topButtons {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .topButtons button {
+    width: 100%;
+    padding: 6px 10px;
+    font-size: 14px;
+  }
+
+  /* Reducir QR */
+  #qr {
+    width: 55px !important;
+    height: 55px !important;
+  }
+
+  /* Evitar que se empalme el título */
+  .tituloCentro {
+    margin-top: 65px;
+  }
+}
+
+/* ---- Botones ordenados a la derecha EN COLUMNA (PC y móvil) ---- */
+.topButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+/* ---- Ajustes para móvil ---- */
+@media (max-width: 600px) {
+
+  .topButtons {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .topButtons button {
+    width: 100%;
+    padding: 6px 10px;
+    font-size: 14px;
+  }
+
+  /* QR más pequeño */
+  #qr {
+    width: 55px !important;
+    height: 55px !important;
+  }
+
+  /* Título más abajo para que no se empalme */
+  .tituloCentro {
+    margin-top: 65px;
+  }
+}
+
+/* ---- Botones a la izquierda, QR a la derecha ---- */
+.topBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 5px 10px;
+}
+
+.topButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start; /* <- AHORA A LA IZQUIERDA */
+}
+
+@media (max-width: 600px) {
+  .subtitulo {
+    font-size: 15px;   /* más pequeña */
+    white-space: nowrap; /* evita que se parta en dos */
+  }
+}
+
+@media (max-width: 600px) {
+  .subtitulo {
+    margin-bottom: 100px; /* añade un respiro extra */
+  }
+}
+
+@media (max-width: 600px) {
+
+  /* Baja el título */
+  .tituloCentro {
+    margin-top: 130px;  /* <- antes era 65px */
+  }
+
+  /* También puedes bajar el subtítulo si quieres más aire */
+  .subtitulo {
+    margin-bottom: 120px; /* antes 100px */
+  }
+}
+
+@media (max-width: 600px) {
+
+  /* Subir el QR un poco */
+  #qr {
+    margin-top: -10px;  /* puedes ajustar a -15px o -20px */
+  }
+}
+
+.topBar {
+  min-height: 90px; /* Ajustable: 80–95 según lo que necesites */
+}
+
+/* ====== SPIDER CHART RESPONSIVE ====== */
+#chartWrapper {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+}
+
+#spider {
+  width: 100%;
+  max-width: 420px; /* tamaño en celular */
+  height: auto !important;
+}
+
+/* En pantallas grandes (PC) */
+@media (min-width: 800px) {
+  #spider {
+    max-width: 700px; /* tamaño grande */
+  }
+}
+
+/* === BOTÓN INICIO IGUAL A BOTÓN MODO === */
+#btnMenu {
+  background: var(--color-input) !important;
+  color: var(--color-texto) !important;
+  border: 1px solid var(--color-borde) !important;
+}
+
+/* Hover (igual que el de modo) */
+#btnMenu:hover {
+  opacity: 0.9;
+}
+
+/* Versión modo claro y modo oscuro se ajusta sola gracias a las variables */
+
+button.procesando {
+  opacity: 0.55 !important;
+  pointer-events: none !important;
+  transition: opacity .1s ease-in-out;
+}
+
+
