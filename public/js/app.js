@@ -380,51 +380,95 @@ if (!dictadoSoportado) {
 }
 
 // ========================== VOZ (Dictado) ==========================
-let rec = null, escuchando = false;
+let rec = null;
+let escuchando = false;
+
 function killMic() {
-  try { if (rec) rec.stop(); } catch {}
+  try { rec && rec.stop(); } catch {}
   escuchando = false;
   const b = $("btnVoz");
-  if (b) { b.textContent = "Dictar"; b.classList.remove("escuchando"); }
+  if (b) {
+    b.textContent = "Dictar";
+    b.classList.remove("escuchando");
+  }
 }
+
 if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   rec = new SR();
   rec.lang = "es-MX";
-  rec.continuous = false;
+
+  // ⭐ Dictado continuo + resultados en tiempo real
+  rec.continuous = true;
   rec.interimResults = true;
 
   rec.onresult = (e) => {
-    let texto = "";
-    for (const r of e.results) texto += r[0].transcript + " ";
-    $("respuesta").value = ($("respuesta").value + " " + texto).trim();
+    let textoFinal = "";
+    let textoIntermedio = "";
+
+    // Recorrer resultados
+    for (let i = 0; i < e.results.length; i++) {
+      const res = e.results[i];
+      if (res.isFinal) {
+        textoFinal += res[0].transcript + " ";
+      } else {
+        textoIntermedio += res[0].transcript + " ";
+      }
+    }
+
+    const ta = $("respuesta");
+
+    // ⭐ Mostrar texto en tiempo real SIN duplicar
+    ta.value = (ta.dataset.baseText || "") + " " + textoIntermedio;
+
+    // Cuando ya es final → agregar definitivamente
+    if (textoFinal.trim() !== "") {
+      ta.dataset.baseText = (ta.dataset.baseText || "") + " " + textoFinal;
+      ta.value = ta.dataset.baseText;
+    }
+
+    ta.value = ta.value.trim();
     updateEnviarDisabled();
   };
+
   rec.onstart = () => {
     escuchando = true;
     const b = $("btnVoz");
     b.textContent = "Escuchando...";
     b.classList.add("escuchando");
+
+    // Guardar el texto previo del textarea
+    $("respuesta").dataset.baseText = $("respuesta").value;
   };
+
   rec.onend = () => {
-    escuchando = false;
-    const b = $("btnVoz");
-    b.textContent = "Dictar";
-    b.classList.remove("escuchando");
+    // ⭐ Si el usuario NO lo apagó manualmente, reinicia
+    if (escuchando) rec.start();
   };
+
   rec.onerror = () => {
-    escuchando = false;
-    const b = $("btnVoz");
-    b.textContent = "Dictar";
-    b.classList.remove("escuchando");
+    if (escuchando) rec.start();
   };
 }
+
+// ========================== BOTÓN DE DICTADO ==========================
 $("btnVoz") && ($("btnVoz").onclick = () => {
-  if (!rec) return alert("Tu navegador no soporta dictado por voz (usa Chrome o Edge).");
+  if (!rec) return alert("Tu navegador no soporta dictado por voz.");
+
   const ta = $("respuesta");
   if (ta.disabled) return;
-  if (!escuchando) rec.start();
-  else rec.stop();
+
+  if (!escuchando) {
+    // INICIAR MIC
+    escuchando = true;
+    rec.start();
+  } else {
+    // DETENER MIC
+    escuchando = false;
+    rec.stop();
+    $("btnVoz").textContent = "Dictar";
+    $("btnVoz").classList.remove("escuchando");
+  }
 });
 
 // ========================== INIT ==========================
@@ -792,11 +836,14 @@ if (puntaje10 != null) {
     show("feedback");
 
     // Cálculo de scores para la Spider Chart (sin mostrarlos aquí)
+// ⭐ MAPEO REAL DE PUNTAJES: nombre largo → sigla
     const s = COMPETENCIAS.map(c => {
-      let v = Number(punt[c] ?? 0);
+      const nombreLargo = MAPA_SIGLAS[c];  // "AA" => "Aprendizaje y Adaptabilidad"
+      let v = Number(punt[nombreLargo] ?? 0);
       v = Math.max(0, Math.min(100, v));
       return Math.round(v / 5) * 5;
     });
+
 
     estado.respuestas.push({ pregunta, respuesta: respuestaEfectiva, feedback: parsed });
     estado.scores.push(s);
