@@ -401,33 +401,46 @@ if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
   rec.interimResults = true;
 
   rec.onresult = (e) => {
-    let textoFinal = "";
-    let textoIntermedio = "";
+  let textoFinal = "";
+  let textoIntermedio = "";
 
-    // Recorrer resultados
-    for (let i = 0; i < e.results.length; i++) {
-      const res = e.results[i];
-      if (res.isFinal) {
-        textoFinal += res[0].transcript + " ";
-      } else {
-        textoIntermedio += res[0].transcript + " ";
-      }
+  for (let i = 0; i < e.results.length; i++) {
+    const res = e.results[i];
+    if (res.isFinal) {
+      textoFinal += res[0].transcript + " ";
+    } else {
+      textoIntermedio += res[0].transcript + " ";
     }
+  }
 
-    const ta = $("respuesta");
+  const ta = $("respuesta");
 
-    // ⭐ Mostrar texto en tiempo real SIN duplicar
-    ta.value = (ta.dataset.baseText || "") + " " + textoIntermedio;
+  // 🔥 Limpia duplicados por repeticiones de Chrome móvil
+  function limpiarDuplicados(str) {
+    return str
+      .split(" ")
+      .filter((w, i, arr) => w && w !== arr[i - 1]) // elimina palabras repetidas seguidas
+      .join(" ");
+  }
 
-    // Cuando ya es final → agregar definitivamente
-    if (textoFinal.trim() !== "") {
-      ta.dataset.baseText = (ta.dataset.baseText || "") + " " + textoFinal;
-      ta.value = ta.dataset.baseText;
-    }
+  textoIntermedio = limpiarDuplicados(textoIntermedio);
+  textoFinal = limpiarDuplicados(textoFinal);
 
-    ta.value = ta.value.trim();
-    updateEnviarDisabled();
-  };
+  // Texto base ya confirmado
+  let base = ta.dataset.baseText || "";
+
+  // Actualiza intermedio
+  ta.value = (base + " " + textoIntermedio).trim();
+
+  // Cuando Chrome manda final
+  if (textoFinal.trim() !== "") {
+    base = (base + " " + textoFinal).trim();
+    ta.dataset.baseText = base;
+    ta.value = base;
+  }
+
+  updateEnviarDisabled();
+};
 
   rec.onstart = () => {
     escuchando = true;
