@@ -400,39 +400,48 @@ if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
   rec.continuous = true;
   rec.interimResults = true;
 
-  rec.onresult = (e) => {
+ rec.onresult = (e) => {
   const ta = $("respuesta");
+  let base = (ta.dataset.baseText || "").trim();
 
-  // Texto base confirmado
-  let base = ta.dataset.baseText || "";
-
-  let textoCompleto = "";
+  // 1. Chrome manda TODA la frase cada vez → ensamblamos un único texto plano
+  let full = "";
   for (let i = 0; i < e.results.length; i++) {
-    textoCompleto += e.results[i][0].transcript + " ";
+    full += e.results[i][0].transcript + " ";
+  }
+  full = full.trim();
+
+  // 2. Normalizamos reduciendo espacios múltiples
+  full = full.replace(/\s+/g, " ");
+  base = base.replace(/\s+/g, " ");
+
+  // 3. 🔥 Detección avanzada de duplicado:
+  // si la frase FULL contiene 2 veces la frase BASE seguida, Chrome repitió todo
+  if (full.includes(base + " " + base)) {
+    full = full.replace(base + " " + base, base);
   }
 
-  // Limpia espacios
-  textoCompleto = textoCompleto.trim();
+  // 4. Detectar lo NUEVO que Chrome agregó
+  let nuevo = full.slice(base.length).trim();
 
-  // 🔥 Elimina la parte ya conocida (base) y deja solo lo nuevo
-  let nuevo = textoCompleto.startsWith(base)
-    ? textoCompleto.slice(base.length).trim()
-    : textoCompleto;
+  // 5. Si lo "nuevo" contiene de nuevo parte del base → limpiamos
+  if (nuevo.startsWith(base)) nuevo = nuevo.slice(base.length).trim();
 
-  // Si Chrome repitió todo, nuevo sería igual al base → NO se agrega
-  if (nuevo === base || nuevo.length === 0) {
-    ta.value = base; // no crecerá
+  // 6. Si Chrome no agregó nada real → no crecemos
+  if (nuevo.length === 0) {
+    ta.value = base;
   } else {
     ta.value = (base + " " + nuevo).trim();
   }
 
-  // Cuando un resultado es final → confirmar texto
+  // 7. Cuando llega un resultado final → fijamos nuevo base
   if (e.results[e.results.length - 1].isFinal) {
     ta.dataset.baseText = ta.value.trim();
   }
 
   updateEnviarDisabled();
 };
+
 
 
   rec.onstart = () => {
