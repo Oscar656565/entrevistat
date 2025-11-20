@@ -792,11 +792,14 @@ if (puntaje10 != null) {
     show("feedback");
 
     // Cálculo de scores para la Spider Chart (sin mostrarlos aquí)
-    const s = COMPETENCIAS.map(c => {
-      let v = Number(punt[c] ?? 0);
-      v = Math.max(0, Math.min(100, v));
-      return Math.round(v / 5) * 5;
-    });
+// ⭐ CÁLCULO CORRECTO DE SCORES PARA LA SPIDER CHART
+const s = COMPETENCIAS.map(sigla => {
+  const nombreLargo = MAPA_SIGLAS[sigla]; // "AA" → "Aprendizaje y Adaptabilidad"
+  let v = Number(punt[nombreLargo] ?? 0);
+  v = Math.max(0, Math.min(100, v));      // asegurar rango
+  return Math.round(v / 5) * 5;           // redondeo agradable
+});
+
 
     estado.respuestas.push({ pregunta, respuesta: respuestaEfectiva, feedback: parsed });
     estado.scores.push(s);
