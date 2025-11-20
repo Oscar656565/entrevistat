@@ -401,46 +401,39 @@ if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
   rec.interimResults = true;
 
   rec.onresult = (e) => {
-  let textoFinal = "";
-  let textoIntermedio = "";
-
-  for (let i = 0; i < e.results.length; i++) {
-    const res = e.results[i];
-    if (res.isFinal) {
-      textoFinal += res[0].transcript + " ";
-    } else {
-      textoIntermedio += res[0].transcript + " ";
-    }
-  }
-
   const ta = $("respuesta");
 
-  // 🔥 Limpia duplicados por repeticiones de Chrome móvil
-  function limpiarDuplicados(str) {
-    return str
-      .split(" ")
-      .filter((w, i, arr) => w && w !== arr[i - 1]) // elimina palabras repetidas seguidas
-      .join(" ");
-  }
-
-  textoIntermedio = limpiarDuplicados(textoIntermedio);
-  textoFinal = limpiarDuplicados(textoFinal);
-
-  // Texto base ya confirmado
+  // Texto base confirmado
   let base = ta.dataset.baseText || "";
 
-  // Actualiza intermedio
-  ta.value = (base + " " + textoIntermedio).trim();
+  let textoCompleto = "";
+  for (let i = 0; i < e.results.length; i++) {
+    textoCompleto += e.results[i][0].transcript + " ";
+  }
 
-  // Cuando Chrome manda final
-  if (textoFinal.trim() !== "") {
-    base = (base + " " + textoFinal).trim();
-    ta.dataset.baseText = base;
-    ta.value = base;
+  // Limpia espacios
+  textoCompleto = textoCompleto.trim();
+
+  // 🔥 Elimina la parte ya conocida (base) y deja solo lo nuevo
+  let nuevo = textoCompleto.startsWith(base)
+    ? textoCompleto.slice(base.length).trim()
+    : textoCompleto;
+
+  // Si Chrome repitió todo, nuevo sería igual al base → NO se agrega
+  if (nuevo === base || nuevo.length === 0) {
+    ta.value = base; // no crecerá
+  } else {
+    ta.value = (base + " " + nuevo).trim();
+  }
+
+  // Cuando un resultado es final → confirmar texto
+  if (e.results[e.results.length - 1].isFinal) {
+    ta.dataset.baseText = ta.value.trim();
   }
 
   updateEnviarDisabled();
 };
+
 
   rec.onstart = () => {
     escuchando = true;
