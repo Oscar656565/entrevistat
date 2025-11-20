@@ -365,8 +365,6 @@ function onTimeUp() {
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 const dictadoSoportado = !!SpeechRecognition;
 
-// Referencia del botón
-const btnVoz = document.getElementById("btnVoz");
 
 // Si NO está soportado
 if (!dictadoSoportado) {
@@ -473,6 +471,8 @@ $("btnVoz") && ($("btnVoz").onclick = () => {
 
 // ========================== INIT ==========================
 document.addEventListener("DOMContentLoaded", () => {
+  const btnVoz = $("btnVoz");
+
   createLoader();
 
   const sel = $("puesto");
