@@ -401,48 +401,37 @@ if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
   rec.interimResults = true;
 
  rec.onresult = (e) => {
-  const ta = $("respuesta");
-  let base = (ta.dataset.baseText || "").trim();
+    const ta = $("respuesta");
+    if (!ta) return;
 
-  // 1. Chrome manda TODA la frase cada vez → ensamblamos un único texto plano
-  let full = "";
-  for (let i = 0; i < e.results.length; i++) {
-    full += e.results[i][0].transcript + " ";
-  }
-  full = full.trim();
+    // Texto que ya tenía el textarea (teclado + dictado previo)
+    let base = ta.value.trim();
 
-  // 2. Normalizamos reduciendo espacios múltiples
-  full = full.replace(/\s+/g, " ");
-  base = base.replace(/\s+/g, " ");
+    // Juntar solo los resultados FINALES de este evento
+    let agregado = "";
 
-  // 3. 🔥 Detección avanzada de duplicado:
-  // si la frase FULL contiene 2 veces la frase BASE seguida, Chrome repitió todo
-  if (full.includes(base + " " + base)) {
-    full = full.replace(base + " " + base, base);
-  }
+    for (let i = 0; i < e.results.length; i++) {
+      const res = e.results[i];
+      if (res.isFinal) {
+        agregado += res[0].transcript + " ";
+      }
+    }
 
-  // 4. Detectar lo NUEVO que Chrome agregó
-  let nuevo = full.slice(base.length).trim();
+    agregado = agregado.trim();
+    if (!agregado) return;
 
-  // 5. Si lo "nuevo" contiene de nuevo parte del base → limpiamos
-  if (nuevo.startsWith(base)) nuevo = nuevo.slice(base.length).trim();
-
-  // 6. Si Chrome no agregó nada real → no crecemos
-  if (nuevo.length === 0) {
-    ta.value = base;
-  } else {
-    ta.value = (base + " " + nuevo).trim();
-  }
-
-  // 7. Cuando llega un resultado final → fijamos nuevo base
-  if (e.results[e.results.length - 1].isFinal) {
-    ta.dataset.baseText = ta.value.trim();
-  }
-
-  updateEnviarDisabled();
-};
+// Evitar duplicados EXACTOS
+if (ta.value.endsWith(agregado)) return;
 
 
+    // Nuevo valor = lo que ya había + lo que dictaste en este bloque
+    ta.value = (base + " " + agregado).trim();
+
+    // Guardamos como texto base para futuras llamadas (por si lo quieres usar después)
+    ta.dataset.baseText = ta.value;
+
+    updateEnviarDisabled();
+  };
 
   rec.onstart = () => {
     escuchando = true;
@@ -455,13 +444,13 @@ if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
   };
 
   rec.onend = () => {
-    // ⭐ Si el usuario NO lo apagó manualmente, reinicia
-    if (escuchando) rec.start();
   };
 
-  rec.onerror = () => {
-    if (escuchando) rec.start();
+  rec.onerror = (e) => {
+      console.warn("SpeechRecognition error:", e.error);
+      // NO reiniciar automáticamente
   };
+
 }
 
 // ========================== BOTÓN DE DICTADO ==========================
