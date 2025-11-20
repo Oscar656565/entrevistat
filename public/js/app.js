@@ -365,6 +365,8 @@ function onTimeUp() {
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 const dictadoSoportado = !!SpeechRecognition;
 
+// Referencia del botón
+const btnVoz = document.getElementById("btnVoz");
 
 // Si NO está soportado
 if (!dictadoSoportado) {
@@ -378,105 +380,55 @@ if (!dictadoSoportado) {
 }
 
 // ========================== VOZ (Dictado) ==========================
-let rec = null;
-let escuchando = false;
-
+let rec = null, escuchando = false;
 function killMic() {
-  try { rec && rec.stop(); } catch {}
+  try { if (rec) rec.stop(); } catch {}
   escuchando = false;
   const b = $("btnVoz");
-  if (b) {
-    b.textContent = "Dictar";
-    b.classList.remove("escuchando");
-  }
+  if (b) { b.textContent = "Dictar"; b.classList.remove("escuchando"); }
 }
-
 if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   rec = new SR();
   rec.lang = "es-MX";
+  rec.continuous = false;
+  rec.interimResults = false;
 
-  // ⭐ Dictado continuo + resultados en tiempo real
-  rec.continuous = true;
-  rec.interimResults = true;
-
- rec.onresult = (e) => {
-    const ta = $("respuesta");
-    if (!ta) return;
-
-    // Texto que ya tenía el textarea (teclado + dictado previo)
-    let base = ta.value.trim();
-
-    // Juntar solo los resultados FINALES de este evento
-    let agregado = "";
-
-    for (let i = 0; i < e.results.length; i++) {
-      const res = e.results[i];
-      if (res.isFinal) {
-        agregado += res[0].transcript + " ";
-      }
-    }
-
-    agregado = agregado.trim();
-    if (!agregado) return;
-
-// Evitar duplicados EXACTOS
-if (ta.value.endsWith(agregado)) return;
-
-
-    // Nuevo valor = lo que ya había + lo que dictaste en este bloque
-    ta.value = (base + " " + agregado).trim();
-
-    // Guardamos como texto base para futuras llamadas (por si lo quieres usar después)
-    ta.dataset.baseText = ta.value;
-
+  rec.onresult = (e) => {
+    let texto = "";
+    for (const r of e.results) texto += r[0].transcript + " ";
+    $("respuesta").value = ($("respuesta").value + " " + texto).trim();
     updateEnviarDisabled();
   };
-
   rec.onstart = () => {
     escuchando = true;
     const b = $("btnVoz");
     b.textContent = "Escuchando...";
     b.classList.add("escuchando");
-
-    // Guardar el texto previo del textarea
-    $("respuesta").dataset.baseText = $("respuesta").value;
   };
-
   rec.onend = () => {
+    escuchando = false;
+    const b = $("btnVoz");
+    b.textContent = "Dictar";
+    b.classList.remove("escuchando");
   };
-
-  rec.onerror = (e) => {
-      console.warn("SpeechRecognition error:", e.error);
-      // NO reiniciar automáticamente
+  rec.onerror = () => {
+    escuchando = false;
+    const b = $("btnVoz");
+    b.textContent = "Dictar";
+    b.classList.remove("escuchando");
   };
-
 }
-
-// ========================== BOTÓN DE DICTADO ==========================
 $("btnVoz") && ($("btnVoz").onclick = () => {
-  if (!rec) return alert("Tu navegador no soporta dictado por voz.");
-
+  if (!rec) return alert("Tu navegador no soporta dictado por voz (usa Chrome o Edge).");
   const ta = $("respuesta");
   if (ta.disabled) return;
-
-  if (!escuchando) {
-    // INICIAR MIC
-    escuchando = true;
-    rec.start();
-  } else {
-    // DETENER MIC
-    escuchando = false;
-    rec.stop();
-    $("btnVoz").textContent = "Dictar";
-    $("btnVoz").classList.remove("escuchando");
-  }
+  if (!escuchando) rec.start();
+  else rec.stop();
 });
 
 // ========================== INIT ==========================
 document.addEventListener("DOMContentLoaded", () => {
-  const btnVoz = $("btnVoz");
-
   createLoader();
 
   const sel = $("puesto");
@@ -503,7 +455,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const ta = $("respuesta");
   if (ta) {
-    ta.placeholder = "Ingresa tu respuesta con el teclado o usando el micrófono";
+    ta.placeholder = "Ingresa tu respuesta antes de que se agote el tiempo.";
     ta.addEventListener("input", updateEnviarDisabled);
   }
   updateEnviarDisabled();
@@ -579,7 +531,7 @@ function resetCamposPregunta() {
   if (ta) {
     ta.disabled = false;
     ta.value = "";
-    ta.placeholder = "Ingresa tu respuesta con el teclado o usando el micrófono";
+    ta.placeholder = "Ingresa tu respuesta antes de que se agote el tiempo.";
   }
   const fbTxt = $("feedbackSTAR"); if (fbTxt) fbTxt.textContent = "";
   const fbScore = $("feedbackScore"); if (fbScore) { fbScore.textContent = ""; }
@@ -630,7 +582,7 @@ function mostrarPregunta() {
   const ta = $("respuesta");
   ta.value = "";
   ta.disabled = false;
-  ta.placeholder = "Ingresa tu respuesta con el teclado o usando el micrófono";
+  ta.placeholder = "Ingresa tu respuesta antes de que se agote el tiempo.";
   ta.focus();
 
   const btnVoz = $("btnVoz");
@@ -840,14 +792,11 @@ if (puntaje10 != null) {
     show("feedback");
 
     // Cálculo de scores para la Spider Chart (sin mostrarlos aquí)
-// ⭐ MAPEO REAL DE PUNTAJES: nombre largo → sigla
     const s = COMPETENCIAS.map(c => {
-      const nombreLargo = MAPA_SIGLAS[c];  // "AA" => "Aprendizaje y Adaptabilidad"
-      let v = Number(punt[nombreLargo] ?? 0);
+      let v = Number(punt[c] ?? 0);
       v = Math.max(0, Math.min(100, v));
       return Math.round(v / 5) * 5;
     });
-
 
     estado.respuestas.push({ pregunta, respuesta: respuestaEfectiva, feedback: parsed });
     estado.scores.push(s);
